@@ -1,0 +1,68 @@
+#include "pico/stdlib.h"
+#include "hardware/timer.h"
+
+#define LED_RED 2
+#define LED_YELLOW 3
+#define LED_GREEN 4
+#define BUTTON 5
+
+volatile int estado = 0;
+volatile bool button_pressed = false;
+
+bool repeating_timer_callback(struct repeating_timer *t) {
+    gpio_put(LED_RED, estado == 0);
+    gpio_put(LED_YELLOW, estado == 1);
+    gpio_put(LED_GREEN, estado == 2);
+    estado = (estado + 1) % 3;
+    return true;
+}
+
+bool one_shot_timer_callback(struct repeating_timer *t) {
+    static int led_state = 0;
+    
+    if (led_state == 0) {
+        gpio_put(LED_RED, 1);
+        gpio_put(LED_YELLOW, 1);
+        gpio_put(LED_GREEN, 1);
+    } else if (led_state == 1) {
+        gpio_put(LED_GREEN, 0);
+    } else if (led_state == 2) {
+        gpio_put(LED_YELLOW, 0);
+    } else {
+        gpio_put(LED_RED, 0);
+        button_pressed = false;
+        return false;
+    }
+    led_state++;
+    add_alarm_in_ms(3000, one_shot_timer_callback, NULL, NULL);
+    return false;
+}
+
+void button_callback(uint gpio, uint32_t events) {
+    if (!button_pressed) {
+        button_pressed = true;
+        add_alarm_in_ms(3000, one_shot_timer_callback, NULL, NULL);
+    }
+}
+
+int main() {
+    stdio_init_all();
+    gpio_init(LED_RED);
+    gpio_init(LED_YELLOW);
+    gpio_init(LED_GREEN);
+    gpio_init(BUTTON);
+    gpio_set_dir(LED_RED, GPIO_OUT);
+    gpio_set_dir(LED_YELLOW, GPIO_OUT);
+    gpio_set_dir(LED_GREEN, GPIO_OUT);
+    gpio_set_dir(BUTTON, GPIO_IN);
+    gpio_pull_up(BUTTON);
+    gpio_set_irq_enabled_with_callback(BUTTON, GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    
+    struct repeating_timer timer;
+    add_repeating_timer_ms(3000, repeating_timer_callback, NULL, &timer);
+    
+    while (true) {
+        printf("Sistema funcionando...\n");
+        sleep_ms(1000);
+    }
+}
