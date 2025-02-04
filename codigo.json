@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "author": "Guilherme Meira",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "raspberry-pi-pico", "id": "pico", "x": 0, "y": 0, "rotate": 0 },
+    { "type": "led", "id": "led_red", "x": -40, "y": -50, "color": "red", "pin": 2 },
+    { "type": "led", "id": "led_yellow", "x": 0, "y": -50, "color": "yellow", "pin": 3 },
+    { "type": "led", "id": "led_green", "x": 40, "y": -50, "color": "green", "pin": 4 },
+    { "type": "led", "id": "led_blue", "x": -40, "y": 50, "color": "blue", "pin": 6 },
+    { "type": "button", "id": "button", "x": 0, "y": 50, "pin": 5, "pull": "up" }
+  ],
+  "connections": [],
+  "dependencies": {}
+}
